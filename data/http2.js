@@ -1,0 +1,18 @@
+// http_server2.js
+const http = require('http'),
+fs = require('fs');
+http.createServer((request, response)=>{
+	fs.writeFile(__dirname+'/header01.json', JSON.stringify(request.headers), error=>{
+		if(error) return console.log(error);
+		console.log('HTTP檔頭儲存');
+	});
+	fs.readFile(__dirname+'../src/http.js', (error, data)=>{
+	if(error) {
+		response.writeHead(500, {'Content-Type': 'text/plain'});
+		response.end('500 - http.js not found');
+	} else {
+		response.writeHead(200, {'Content-Type': 'text/html'});
+		response.end(data);
+	}
+	});
+}).listen(3000);
