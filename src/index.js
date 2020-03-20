@@ -6,7 +6,7 @@ const app = express();  // express所有都有順序性
 app.set('view engine', 'ejs');
 // 設定views路徑 (選擇性設定)，如果命名都對就不用寫
 // app.set('views', __dirname + '/../views');
-const urlencodedParser = express.urlencoded({extended: false}); // 中介軟體
+// const urlencodedParser = express.urlencoded({extended: false}); // 中介軟體
 //encoded 是這個格式?a=2&b=bill
 app.use(express.urlencoded({extended: false}))
 app.use(express.json());
@@ -33,9 +33,13 @@ app.get('/try-qs', (req, res)=>{   // req用途告訴後端資料
     res.json(urlParts);
 });
 
+app.get('/try-post', (req, res)=>{
+    res.render('try-post-form');
+});
 
-app.post('/try-post-form', urlencodedParser, (req, res) => {   // 中介 放在第二個位置
+app.post('/try-post', (req, res) => {   // , urlencodedParser中介 放在第二個位置
     res.json(req.body);   // 要透過urlencodedParser才有這個可以用req.body
+    console.log(req.body);
 });
 
 
