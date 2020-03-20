@@ -1,5 +1,9 @@
 const express = require('express');  //express是原本建服務器的功能都可以用在額外添加新功能
 const url = require('url');
+const multer = require('multer');
+const upload = multer({dest:'tmp_uploads'});
+const fs = require('fs'); 
+const uuid = require('uuid');
 
 const app = express();  // express所有都有順序性
 // 註冊樣版引擎
@@ -28,7 +32,7 @@ app.get('/sales', (req, res) => {
 });
 
 app.get('/try-qs', (req, res)=>{   // req用途告訴後端資料
-    const urlParts = url.parse(req.url, true);  // true的話會把網址?後面打的東西，JSON裡面的query變OBJ
+    const urlParts = url.parse(req.url, true);  // true的話會把網址?後面打的東西，parse會把JSON裡面的query變OBJ
     console.log(urlParts); // 在 server 端查看
     res.json(urlParts);
 });
@@ -40,6 +44,39 @@ app.get('/try-post', (req, res)=>{
 app.post('/try-post', (req, res) => {   // , urlencodedParser中介 放在第二個位置
     res.json(req.body);   // 要透過urlencodedParser才有這個可以用req.body
     console.log(req.body);
+});
+
+app.post('/try-upload', upload.single('avatar'), (req, res)=>{
+
+    console.log(req.file);
+    if(req.file && req.file.originalname){
+        let ext = ''; //副檔名
+        switch(req.file.mimetype){
+            case 'image/jpeg':
+                ext = '.jpg';
+                break;
+            case 'image/png':
+                ext = '.png';
+                break;
+            case 'image/gif':
+                ext = '.gif';
+                break;
+        }
+        if(ext){
+            let filename = uuid.v4() + ext;
+            fs.rename(
+                req.file.path,
+                './public/img/' + filename,
+                error=>{}
+            );
+        } else {
+            fs.unlink(req.file.path, error=>{});
+        }
+    }
+    res.json({
+        body: req.body,
+        file: req.file,
+    });
 });
 
 
