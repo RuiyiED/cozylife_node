@@ -41,6 +41,18 @@ app.get('/try-post', (req, res)=>{
     res.render('try-post-form');
 });
 
+app.get('/my-params2/:action?/:id?', (req, res)=>{
+    res.json(req.params);
+});
+app.get(/^\/mobile\/09\d{2}-?\d{3}-?\d{3}$/, (req,res)=>{
+    let m = req.url.slice(8);
+    m = m.split('?')[0];
+    m = m.split('-').join('');
+    res.json({
+        url: m
+    });
+});
+
 app.post('/try-post', (req, res) => {   // , urlencodedParser中介 放在第二個位置
     res.json(req.body);   // 要透過urlencodedParser才有這個可以用req.body
     console.log(req.body);
@@ -78,6 +90,8 @@ app.post('/try-upload', upload.single('avatar'), (req, res)=>{
         file: req.file,
     });
 });
+
+app.use(  require(__dirname + '/admins/admin2')  );
 
 
 app.use(express.static('public'));  // 靜態表示不會再動，放所有動態路由後面
