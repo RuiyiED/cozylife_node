@@ -4,6 +4,8 @@ const multer = require('multer');
 const upload = multer({dest:'tmp_uploads'});
 const fs = require('fs'); 
 const uuid = require('uuid');
+const session = require('express-session');
+
 
 const app = express();  // express所有都有順序性
 // 註冊樣版引擎
@@ -14,6 +16,27 @@ app.set('view engine', 'ejs');
 //encoded 是這個格式?a=2&b=bill
 app.use(express.urlencoded({extended: false}))
 app.use(express.json());
+app.use(session({
+    // 新用戶沒有使用到 session 物件時不會建立 session 和發送 cookie
+    saveUninitialized: false,
+    resave: false, // 沒變更內容是否強制回存
+    secret: '加密用的字串',
+    cookie: {
+        maxAge: 1200000, // session存活時間，20分鐘，單位毫秒 // 不設定就是瀏覽器關掉才過期
+    }
+}));
+
+
+app.use((req, res, next)=>{
+    // 把 session 的資料放到 locals 裡, 用來傳給樣版 ejs
+    if(req.session.loginUser){
+        res.locals.loginUser = req.session.loginUser;
+    } else {
+        res.locals.loginUser = {};
+    }
+
+    next();
+});
 
 app.get('/', (req, res) => {            //  '/'根目錄
     // res.send(`<h2>Hello World</h2>`)   
@@ -59,7 +82,10 @@ app.post('/try-post', (req, res) => {   // , urlencodedParser中介 放在第二
 });
 
 app.post('/try-upload', upload.single('avatar'), (req, res)=>{
-
+    const output = {
+        body: req.body,
+        file: req.file,
+    };
     console.log(req.file);
     if(req.file && req.file.originalname){
         let ext = ''; //副檔名
@@ -76,6 +102,7 @@ app.post('/try-upload', upload.single('avatar'), (req, res)=>{
         }
         if(ext){
             let filename = uuid.v4() + ext;
+            output.newName = filename;
             fs.rename(
                 req.file.path,
                 './public/img/' + filename,
@@ -85,14 +112,26 @@ app.post('/try-upload', upload.single('avatar'), (req, res)=>{
             fs.unlink(req.file.path, error=>{});
         }
     }
-    res.json({
-        body: req.body,
-        file: req.file,
-    });
+    res.json(output);
 });
 
 app.use(  require(__dirname + '/admins/admin2')  );
+// app.use('/admin3',  require(__dirname + '/admins/admin3')  );
 
+
+app.get('/try-session', (req, res)=>{
+    req.session.my_var = req.session.my_var || 0; // 預設為 0 //my_var是自訂名稱
+    req.session.my_var++;
+    res.json({
+        my_var: req.session.my_var,
+        session: req.session
+    });
+})
+
+app.use("/member", require(__dirname+'/routes/member'));
+app.get('/sess', (req, res)=>{
+    res.json(req.session);
+ });
 
 app.use(express.static('public'));  // 靜態表示不會再動，放所有動態路由後面
 // app.use(express.static(__dirname + '/../public'));

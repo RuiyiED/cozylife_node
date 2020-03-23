@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- 檔案上傳前, 預覽 preview -->
+
+<form name="form1" onsubmit="return checkForm()">
+
+    <label for="avatar">大頭貼 </label>
+    <input type="file" name="avatar" id="avatar"><br>
+    <img src="" alt="" id="myImg"><br>
+
+    <label for="name">姓名 </label>
+    <input type="text" name="name" id="name"><br>
+
+    <input type="submit">
+    
+</form>
+
+
+<script>
+    const avatar = document.querySelector('#avatar');
+    const preview = document.querySelector('#myImg');
+
+    avatar.addEventListener('change', function(event){
+        const reader = new FileReader();
+        reader.addEventListener('load', function(event){
+            preview.src = reader.result
+        });
+
+        reader.readAsDataURL(avatar.files[0]);
+    });
+
+
+
+    function checkForm(){
+        const fd = new FormData(document.form1);
+        fetch('/try-upload', {
+            method: 'POST',
+            body: fd, // enctype 預設為 multipart/form-data
+        })
+        .then(r=>r.json())
+        .then(obj=>{
+            console.log(obj);
+        });
+        return false;
+    }
+</script>
+
+</body>
+</html>
