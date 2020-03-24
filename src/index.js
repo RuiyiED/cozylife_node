@@ -5,6 +5,7 @@ const upload = multer({dest:'tmp_uploads'});
 const fs = require('fs'); 
 const uuid = require('uuid');
 const session = require('express-session');
+const db = require(__dirname + '/db_connect');
 
 
 const app = express();  // express所有都有順序性
@@ -131,7 +132,34 @@ app.get('/try-session', (req, res)=>{
 app.use("/member", require(__dirname+'/routes/member'));
 app.get('/sess', (req, res)=>{
     res.json(req.session);
- });
+});
+
+
+app.get('/try-db', (req, res)=>{
+    // const sql = "SELECT * FROM students LIMIT 3";
+    // db.query(sql, (error, results, fields)=>{
+    //     if(error){
+    //         console.log(error);
+    //     } else {
+    //         res.json(results);
+    //     }
+    // });
+
+    const sql = "UPDATE `students` SET `cName`=?, cEmail=? WHERE cID=2 ";
+    db.query(sql, ['陳小華', 'wwww@test.com'], (error, results)=>{
+        if(error){
+            console.log(error);
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+app.use('/students', require(__dirname +'/routes/students'));
+
+
+
+
 
 app.use(express.static('public'));  // 靜態表示不會再動，放所有動態路由後面
 // app.use(express.static(__dirname + '/../public'));
