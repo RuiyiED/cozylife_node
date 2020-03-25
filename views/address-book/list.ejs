@@ -40,7 +40,7 @@
         <% for(let s in rows){ %>
         <tr>
             <td>
-                <a href="/address-book/edit/<%= item.sid %>"><i class="fas fa-edit"></i></a>
+                <a href="/students/edit/<%= rows[s].cID %>"><i class="fas fa-edit"></i></a>
             </td>
             <td><%= rows[s].cID %></td>
             <td><%= rows[s].cName %></td>
