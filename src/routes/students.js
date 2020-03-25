@@ -28,6 +28,38 @@ router.use((req, res, next)=>{
     next();
 });
 
+
+router.get('/delete/:cID?', (req, res)=>{
+    const sql = "DELETE FROM `students` WHERE cID=?";
+    db.queryAsync(sql, [req.params.cID])
+        .then(results=>{
+            // res.redirect('/address-book');
+            if(req.get('Referer')){
+                // 如果有[從哪裡來]的資料
+                res.redirect( req.get('Referer') );
+            } else {
+                res.redirect('/address-book');
+            }
+
+            /*
+            res.json({
+                success: true
+            });
+
+             */
+        })
+        .catch(ex=>{
+            console.log('ex:', ex);
+            res.json({
+                success: false,
+                info: '無法刪除資料'
+            });
+        })
+});
+
+
+
+
 router.get('/add',(req, res)=>{
     res.render('address-book/add');
 });
@@ -72,6 +104,68 @@ router.post('/add', upload.none(), (req, res)=>{
 
     //res.json(req.body);
 });
+
+
+router.get('/edit/:cID',(req, res)=>{
+    const sql = "SELECT * FROM students WHERE cID=?";
+    db.queryAsync(sql, [req.params.cID])
+        .then(results=>{
+            if(results.length){
+                results[0].birthday = moment(results[0].birthday).format('YYYY-MM-DD');
+                res.render('address-book/edit', results[0]);
+            } else {
+                res.redirect('/address-book');
+            }
+        })
+        .catch(ex=>{
+            console.log('ex:', ex);
+        })
+});
+
+
+router.post('/edit', upload.none(), (req, res)=>{
+    const output = {
+        success: false,
+        error: '',
+    };
+    // TODO: 應該檢查表單進來的資料
+    if(req.body.cName.length<2){
+        output.error = '姓名字元長度太短';
+        return res.json(output);
+    }
+
+    const email_pattern = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+    if(!email_pattern.test(req.body.cEmail)){
+        output.error = 'Email 格式錯誤';
+        return res.json(output);
+    }
+
+    const data = {...req.body};
+    res.json(data);
+
+    return;
+    // req.body.created_at = new Date();
+    const sql = "INSERT INTO `students` SET ?";
+
+    db.queryAsync(sql, req.body)
+        .then(results=>{
+            output.results = results;
+            if(results.affectedRows===1){
+                output.success = true;
+            }
+            res.json(output);
+        })
+        .catch(ex=>{
+            console.log('ex:', ex);
+        })
+
+    //res.json(req.body);
+});
+
+
+
+
+
 
 
 router.get('/:page?',(req, res)=>{
