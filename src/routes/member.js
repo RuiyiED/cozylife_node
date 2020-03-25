@@ -38,4 +38,12 @@ router.post('/login', (req, res)=>{
 
     res.json(output);
 });
+
+
+router.get('/logout', (req, res) => {
+    delete req.session.loginUser;
+    res.redirect('/');
+})
+
+
 module.exports = router;
