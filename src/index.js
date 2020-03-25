@@ -1,8 +1,8 @@
 const express = require('express');  //express是原本建服務器的功能都可以用在額外添加新功能
 const url = require('url');
 const multer = require('multer');
-const upload = multer({dest:'tmp_uploads'});
 const fs = require('fs'); 
+const upload = require(__dirname+'/upload');
 const uuid = require('uuid');
 const session = require('express-session');
 const db = require(__dirname + '/db_connect');
