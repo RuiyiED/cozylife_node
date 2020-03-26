@@ -6,6 +6,7 @@ const upload = require(__dirname+'/upload');
 const uuid = require('uuid');
 const session = require('express-session');
 const db = require(__dirname + '/db_connect');
+const cors = require('cors');
 
 
 const app = express();  // express所有都有順序性
@@ -27,6 +28,7 @@ app.use(session({
     }
 }));
 
+app.use(cors());
 
 app.use((req, res, next)=>{
     // 把 session 的資料放到 locals 裡, 用來傳給樣版 ejs

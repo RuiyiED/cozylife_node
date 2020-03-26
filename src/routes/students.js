@@ -140,18 +140,18 @@ router.post('/edit', upload.none(), (req, res)=>{
         return res.json(output);
     }
 
-    const data = {...req.body};
-    res.json(data);
+    const data = {...req.body};  // 淺複製
+    delete data.cID; // 移除 cID
+   
+    const sql = "UPDATE `students` SET ? WHERE cID=?";
 
-    return;
-    // req.body.created_at = new Date();
-    const sql = "INSERT INTO `students` SET ?";
-
-    db.queryAsync(sql, req.body)
+    db.queryAsync(sql, [data, req.body.cID])
         .then(results=>{
             output.results = results;
-            if(results.affectedRows===1){
+            if(results.changedRows===1){
                 output.success = true;
+            } else {
+                output.error = '資料沒有變更';
             }
             res.json(output);
         })
