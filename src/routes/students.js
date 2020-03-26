@@ -167,8 +167,8 @@ router.post('/edit', upload.none(), (req, res)=>{
 
 
 
-
-router.get('/:page?',(req, res)=>{
+// router.get('/:page?',(req, res)=>{
+const getDataByPage = (req, res)=>{
     const perPage = 3;
     let page = parseInt(req.params.page) || 1;
     const output = {
@@ -204,21 +204,7 @@ router.get('/:page?',(req, res)=>{
 
 
 
-    // const t_sql = "SELECT COUNT(1) num FROM students";
-    // db.query(t_sql, (error, results)=>{
-    //     output.totalRows = results[0].num;
-    //     output.totalPages = Math.ceil(output.totalRows/perPage);
-    //     if(output.page < 1) output.page=1;
-    //     if(output.page > output.totalPages) output.page=output.totalPages;
-
-    //     const sql = `SELECT * FROM students LIMIT ${(output.page-1)*output.perPage}, ${output.perPage}`;
-
-    //     db.query(sql, (error, results)=>{
-    //         output.rows = results;
-    //         res.json(output);
-    //     });
-    // });
-
-});
+};
+router.get('/:page?', getDataByPage);
 
 module.exports = router;
