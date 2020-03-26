@@ -7,6 +7,8 @@ const uuid = require('uuid');
 const session = require('express-session');
 const db = require(__dirname + '/db_connect');
 const cors = require('cors');
+const axios = require('axios');
+const cheerio = require('cheerio');
 
 
 const app = express();  // express所有都有順序性
@@ -160,6 +162,24 @@ app.get('/try-db', (req, res)=>{
 app.use('/students', require(__dirname +'/routes/students'));
 
 
+
+app.get('/yahoo', (req, res)=>{
+        axios.get('https://tw.yahoo.com/')
+        // axios.get('https://www.104.com.tw/job/6gaji?jobsource=hotjob_chr')
+            .then(response=>{
+                //res.send(response.data);
+    
+                const $ = cheerio.load(response.data);
+    
+                $('img').each(function(i, el){
+                    // console.log(el.attribs.src);
+                    res.write(el.attribs.src + '\n');
+               });
+               res.end('');
+            });
+    
+    });
+    
 
 
 
