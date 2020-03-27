@@ -196,6 +196,7 @@ const getDataByPage = (req, res)=>{
                 i.cBirthday = moment(i.cBirthday).format(fm);
             }
             output.rows = results;
+            output.user = req.session.loginUser || {};
             res.render('address-book/list', output);
         })
         .catch(ex=>{
@@ -232,6 +233,7 @@ router.get('/list/:page?', (req, res)=>{
                 i.cBirthday = moment(i.cBirthday).format(fm);
             }
             output.rows = results;
+            output.user = req.session.loginUser || {};
             res.json(output);
         })
         .catch(ex=>{
