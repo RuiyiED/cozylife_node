@@ -30,7 +30,25 @@ app.use(session({
     }
 }));
 
-app.use(cors());
+const whiteList = [
+    'http://localhost:63342',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+    undefined,
+];
+
+const corsOptions = {
+    origin: function(origin, cb){
+        console.log('origin:', origin);
+        if(whiteList.indexOf(origin) < 0){
+            cb(null, false); // 不給過
+        } else {
+            cb(null, true);
+        }
+    }
+};
+app.use(cors(corsOptions));
 
 app.use((req, res, next)=>{
     // 把 session 的資料放到 locals 裡, 用來傳給樣版 ejs
