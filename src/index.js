@@ -39,6 +39,7 @@ const whiteList = [
 ];
 
 const corsOptions = {
+    credentials: true,
     origin: function(origin, cb){
         console.log('origin:', origin);
         if(whiteList.indexOf(origin) < 0){

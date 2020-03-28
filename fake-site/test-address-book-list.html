@@ -50,6 +50,8 @@
     };
 
     const paginationItemFn = (obj)=>{
+        // console.log(obj);
+        
         // page: 頁碼, active: 當頁 'active' or ''
         return `
             <li class="page-item ${obj.active}">
@@ -59,11 +61,11 @@
     };
 
     function changePage(page){
-        // fetch('http://localhost:3000/students/list/' + page)
-        fetch('http://localhost:3000/address-book/list/' + page,
-        {
-            credentials: 'include'
-        })
+        fetch('http://localhost:3000/students/list/' + page,
+        // {
+        //     credentials: 'include'
+        // }
+        )
             .then(r=>r.json())
             .then(obj=>{
                 console.log(obj);
@@ -80,8 +82,10 @@
                         active: i===obj.page ? 'active' : ''
                     });
                 }
+                // console.log(str);
+                
             document.querySelector('.pagination').innerHTML = str;
-        })
+            })
     }
     changePage(1); // 第一次進來直接呼叫
 </script>
