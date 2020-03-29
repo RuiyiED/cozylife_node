@@ -202,6 +202,7 @@ const getDataByPage = (req)=>{
             }
             output.rows = results;
             output.user = req.session.loginUser || {};
+            output.success = true;
             resolve(output);
         })
         .catch(ex=>{
