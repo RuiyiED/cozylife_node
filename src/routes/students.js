@@ -201,6 +201,7 @@ const getDataByPage = (req)=>{
                 i.cBirthday = moment(i.cBirthday).format(fm);
             }
             output.rows = results;
+            output.user = req.session.loginUser || {};
             resolve(output);
         })
         .catch(ex=>{

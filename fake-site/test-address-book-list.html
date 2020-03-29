@@ -62,10 +62,9 @@
 
     function changePage(page){
         fetch('http://localhost:3000/students/list/' + page,
-        // {
-        //     credentials: 'include'
-        // }
-        )
+        {
+            credentials: 'include'
+        })
             .then(r=>r.json())
             .then(obj=>{
                 console.log(obj);
