@@ -167,13 +167,13 @@ router.post('/edit', upload.none(), (req, res)=>{
 const getDataByPage = (req)=>{
     const perPage = 3;
     return new Promise((resolve, reject)=>{ 
-    // if(!req.session.loginUser){
-    //     resolve({
-    //         success: false,
-    //         info: '請登入會員'
-    //     });
-    //     return;
-    // }
+    if(!req.session.loginUser){
+        resolve({
+            success: false,
+            info: '請登入會員'
+        });
+        return;
+    }
     
     let page = parseInt(req.params.page) || 1;
     const output = {
