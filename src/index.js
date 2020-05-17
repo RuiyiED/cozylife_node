@@ -1,222 +1,73 @@
 const express = require('express');  //express是原本建服務器的功能都可以用在額外添加新功能
-const url = require('url');
-const multer = require('multer');
-const fs = require('fs'); 
-const upload = require(__dirname+'/upload');
-const uuid = require('uuid');
-const session = require('express-session');
+// const url = require('url');
+// const upload = require(__dirname+'/upload');
+// const session = require('express-session');
 const db = require(__dirname + '/db_connect');
 const cors = require('cors');
-const axios = require('axios');
-const cheerio = require('cheerio');
-
-
 const app = express();  // express所有都有順序性
-// 註冊樣版引擎
-app.set('view engine', 'ejs');
-// 設定views路徑 (選擇性設定)，如果命名都對就不用寫
-// app.set('views', __dirname + '/../views');
-// const urlencodedParser = express.urlencoded({extended: false}); // 中介軟體
-//encoded 是這個格式?a=2&b=bill
-app.use(express.urlencoded({extended: false}))
+
 app.use(express.json());
-app.use(session({
-    // 新用戶沒有使用到 session 物件時不會建立 session 和發送 cookie
-    saveUninitialized: false,
-    resave: false, // 沒變更內容是否強制回存
-    secret: '加密用的字串',
-    cookie: {
-        maxAge: 1200000, // session存活時間，20分鐘，單位毫秒 // 不設定就是瀏覽器關掉才過期
-    }
-}));
+app.use(cors());
 
-const whiteList = [
-    'http://localhost:63342',
-    'http://localhost:3000',
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    undefined,
-];
-
-const corsOptions = {
-    credentials: true,
-    origin: function(origin, cb){
-        console.log('origin:', origin);
-        if(whiteList.indexOf(origin) < 0){
-            cb(null, false); // 不給過
-        } else {
-            cb(null, true);
-        }
-    }
-};
-app.use(cors(corsOptions));
-
-app.use((req, res, next)=>{
-    // 把 session 的資料放到 locals 裡, 用來傳給樣版 ejs
-    if(req.session.loginUser){
-        res.locals.loginUser = req.session.loginUser;
-    } else {
-        res.locals.loginUser = {};
-    }
-
-    next();
-});
-
-app.get('/', (req, res) => {            //  '/'根目錄
-    // res.send(`<h2>Hello World</h2>`)   
-    res.render('home', {name: 'Hi'});      // send rander end json 只能用一個
-
-});
-app.get('/xxx', (req, res) => {     
-    res.send(`<h2>XXX</h2>`)   
-
-});
-
-app.get('/sales', (req, res) => {     
-    const data = require(__dirname + '/../data/sales');
-    // res.send(`<h2>${data[0].name}</h2>`);
-    res.render('sales-table', {sales: data});
-});
-
-app.get('/try-qs', (req, res)=>{   // req用途告訴後端資料
-    const urlParts = url.parse(req.url, true);  // true的話會把網址?後面打的東西，parse會把JSON裡面的query變OBJ
-    console.log(urlParts); // 在 server 端查看
-    res.json(urlParts);
-});
-
-app.get('/try-post', (req, res)=>{
-    res.render('try-post-form');
-});
-
-app.get('/my-params2/:action?/:id?', (req, res)=>{
-    res.json(req.params);
-});
-app.get(/^\/mobile\/09\d{2}-?\d{3}-?\d{3}$/, (req,res)=>{
-    let m = req.url.slice(8);
-    m = m.split('?')[0];
-    m = m.split('-').join('');
-    res.json({
-        url: m
-    });
-});
-
-app.post('/try-post', (req, res) => {   // , urlencodedParser中介 放在第二個位置
-    res.json(req.body);   // 要透過urlencodedParser才有這個可以用req.body
+app.get('/', (req, res)=>{
     console.log(req.body);
+    res.send(`<h2>Hi Dora</h2>`)   
 });
 
-app.post('/try-upload', upload.single('avatar'), (req, res)=>{
-    const output = {
-        body: req.body,
-        file: req.file,
-    };
-    console.log(req.file);
-    if(req.file && req.file.originalname){
-        let ext = ''; //副檔名
-        switch(req.file.mimetype){
-            case 'image/jpeg':
-                ext = '.jpg';
-                break;
-            case 'image/png':
-                ext = '.png';
-                break;
-            case 'image/gif':
-                ext = '.gif';
-                break;
-        }
-        if(ext){
-            let filename = uuid.v4() + ext;
-            output.newName = filename;
-            fs.rename(
-                req.file.path,
-                './public/img/' + filename,
-                error=>{}
-            );
-        } else {
-            fs.unlink(req.file.path, error=>{});
-        }
-    }
-    res.json(output);
-});
+// ------------------------------------------
+// Ader
+app.use('/clorderdetail', require(__dirname +'/routes/clorderdetail'));
+app.use('/order', require(__dirname +'/routes/order'));
+app.use('/orderID', require(__dirname +'/routes/orderID'));
 
-app.use(  require(__dirname + '/admins/admin2')  );
-// app.use('/admin3',  require(__dirname + '/admins/admin3')  );
+// ------------------------------------------
+// Ruiyi
+app.use('/myserver', require(__dirname + '/routes/myserver'));
+app.use('/register', require(__dirname + '/routes/register'));
+//其他商品資料
 
-
-app.get('/try-session', (req, res)=>{
-    req.session.my_var = req.session.my_var || 0; // 預設為 0 //my_var是自訂名稱
-    req.session.my_var++;
-    res.json({
-        my_var: req.session.my_var,
-        session: req.session
-    });
-})
-
-app.use("/member", require(__dirname+'/routes/member'));
-app.get('/sess', (req, res)=>{
-    res.json(req.session);
-});
-
-
-app.get('/try-db', (req, res)=>{
-    // const sql = "SELECT * FROM students LIMIT 3";
-    // db.query(sql, (error, results, fields)=>{
-    //     if(error){
-    //         console.log(error);
-    //     } else {
-    //         res.json(results);
-    //     }
-    // });
-
-    const sql = "UPDATE `students` SET `cName`=?, cEmail=? WHERE cID=2 ";
-    db.query(sql, ['陳小華', 'wwww@test.com'], (error, results)=>{
-        if(error){
+app.get('/popslide',(req,res)=>{   
+    const sql = "SELECT * FROM product2 order by rand() LIMIT 4";
+    db.query(sql,(error,results,fields)=>{
+        if (error){
             console.log(error);
-        } else {
+        }else{
+            res.json(results);
+        }
+    });
+});
+app.get('/newapro',(req,res)=>{    
+    const sql = "SELECT * FROM product2 order by rand() LIMIT 8";
+    db.query(sql,(error,results,fields)=>{
+        if (error){
+            console.log(error);
+        }else{
             res.json(results);
         }
     });
 });
 
-app.use('/students', require(__dirname +'/routes/students'));
+// ------------------------------------------
+// 旻旻
+app.use('/discount/total', require(__dirname + '/routes/discount'));
 
+// ------------------------------------------
+// 右昕
+app.use('/productAll',require(__dirname + '/routes/productAll'));
+app.use('/productlist',require(__dirname + '/routes/productContent'));
+app.use('/reviews',require(__dirname + '/routes/productReviews'));
+app.use('/otherproduct',require(__dirname + '/routes/otherproduct'));
+app.use('/postreview',require(__dirname + '/routes/productReviews'));
 
+// ------------------------------------------
+// 天鴻
+app.use('/product', require(__dirname + '/routes/product'));
 
-app.get('/yahoo', (req, res)=>{
-        axios.get('https://tw.yahoo.com/')
-        // axios.get('https://www.104.com.tw/job/6gaji?jobsource=hotjob_chr')
-            .then(response=>{
-                //res.send(response.data);
-    
-                const $ = cheerio.load(response.data);
-    
-                $('img').each(function(i, el){
-                    // console.log(el.attribs.src);
-                    res.write(el.attribs.src + '\n');
-               });
-               res.end('');
-            });
-    
-    });
-    
+// ------------------------------------------
+// 宗訓
+app.use('/orderListDetail', require(__dirname +'/routes/orderListDetail'));
 
-
-
-app.use(express.static('public'));  // 靜態表示不會再動，放所有動態路由後面
-// app.use(express.static(__dirname + '/../public'));
-
-app.use((req, res)=>{  // 只要是use和static裡面都是中介軟體，可以全域也可以放在繞死(英文)
-    res.type('text/html');
-    res.status(404);               // 404要放在所有路由的後面，因為他會直接結束
-    res.send(`                        
-        path: ${req.url}</br>
-        <h2>404 - 找不到網頁</h2>
-    `);
-});
-
-
-
-app.listen(3000, ()=>{          // 正常啟動會寫這個
-    console.log("Run");
-    
+// ------------------------------------------
+app.listen(7777, ()=>{          // 正常啟動會寫這個
+    console.log("Run");    
 })

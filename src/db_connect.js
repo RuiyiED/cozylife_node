@@ -6,7 +6,7 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
-    database: 'class'
+    database: 'cozylife'
 });
 db.on('error', ex=>{
     console.log(ex);
